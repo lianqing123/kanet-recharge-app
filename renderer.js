@@ -264,6 +264,9 @@ wv.addEventListener("did-finish-load", () => {
   if (/chatgpt\.com/.test(u) && !acctTimer) verifyOnce();
 });
 
+// 显示当前版本，便于确认是否更新成功
+window.kh.getVersion().then(v => { const e = $("#ver"); if (e) e.textContent = "v" + v; document.title = "分销充值助手 v" + v; }).catch(() => {});
+
 renderRechargeButtons();
 renderAccounts();
 setAcct('<span class="pill warn">未登陆</span>');

@@ -27,6 +27,7 @@ function createWindow() {
 }
 
 ipcMain.handle("check-update", () => { if (mainWin) checkForUpdates(mainWin, false); });
+ipcMain.handle("get-version", () => app.getVersion());
 
 // next-auth 把超长 session token 切成 < 4096B 的多块 cookie，这里复制其分块规则
 const CHUNK = 3933; // 4096 - 估算的 cookie 头开销，与 next-auth 一致
