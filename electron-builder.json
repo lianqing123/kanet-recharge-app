@@ -1,0 +1,21 @@
+{
+  "appId": "com.kanet.recharge",
+  "productName": "分销充值助手",
+  "directories": { "output": "dist" },
+  "files": ["main.js", "preload.js", "updater.js", "index.html", "renderer.js", "package.json"],
+  "publish": [{ "provider": "github", "owner": "lianqing123", "repo": "kanet-recharge-app" }],
+  "artifactName": "kanet-recharge-${version}-${arch}.${ext}",
+  "mac": {
+    "target": [{ "target": "dmg", "arch": ["arm64", "x64"] }],
+    "category": "public.app-category.business",
+    "identity": null
+  },
+  "win": {
+    "target": [{ "target": "zip", "arch": ["x64"] }]
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "perMachine": false
+  }
+}
