@@ -27,6 +27,8 @@
   .ok{color:#34c759;border-color:#34c759}.bad{color:#ff453a;border-color:#ff453a}.warn{color:#ff9f0a;border-color:#ff9f0a}
   #acct{font-weight:600}
   #msg{color:var(--mut);margin-left:auto;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .kh-ts{color:var(--mut);font-weight:400;font-size:11px}
+  #refreshBtn{padding:4px 9px;font-size:11px}
 </style>
 </head>
 <body>
@@ -62,6 +64,7 @@
 
   <!-- 常驻状态行 -->
   <div id="statusbar">
+    <button id="refreshBtn" title="刷新订阅/续费状态">刷新状态</button>
     <span id="acct"><span class="pill warn">未登陆</span></span>
     <span id="msg"></span>
   </div>
