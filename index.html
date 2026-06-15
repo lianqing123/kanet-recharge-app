@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>分销充值助手</title>
+<style>
+  :root{--bg:#10131a;--bar:#171b24;--line:#2a3140;--fg:#e6e9ef;--mut:#9aa3b2;--acc:#10a37f}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:13px/1.4 -apple-system,system-ui,"PingFang SC",sans-serif;display:flex;flex-direction:column}
+  #bar{flex:none;background:var(--bar);border-bottom:1px solid var(--line);padding:8px 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  #statusbar{flex:none;background:#12151c;border-bottom:1px solid var(--line);padding:6px 12px;display:flex;gap:14px;align-items:center;font-size:12px}
+  .grp{display:flex;gap:6px;align-items:center;padding:0 10px;border-right:1px solid var(--line)}
+  .grp:last-child{border-right:0}
+  .grp .t{font-size:11px;color:var(--mut);margin-right:2px}
+  label{color:var(--mut);font-size:12px}
+  select,input{background:#23272f;color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:6px 8px;font-size:12px}
+  input.tok{width:260px}
+  input.nm{width:110px}
+  button{background:#23272f;color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:7px 11px;font-size:12px;cursor:pointer}
+  button.primary{background:var(--acc);color:#fff;border:0}
+  button.rc{background:#1f6feb;color:#fff;border:0;font-weight:600}
+  button.danger{border-color:#ff453a;color:#ff453a}
+  button:hover{filter:brightness(1.1)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  webview{flex:1;border:0;width:100%}
+  .pill{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line)}
+  .ok{color:#34c759;border-color:#34c759}.bad{color:#ff453a;border-color:#ff453a}.warn{color:#ff9f0a;border-color:#ff9f0a}
+  #acct{font-weight:600}
+  #msg{color:var(--mut);margin-left:auto;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+</head>
+<body>
+  <div id="bar">
+    <!-- ① 登陆（备注名必填） -->
+    <div class="grp">
+      <span class="t">①登陆</span>
+      <input id="accName" class="nm" placeholder="备注名*（必填）">
+      <input id="accTok" class="tok" type="password" placeholder="粘贴整段 session JSON 或 sessionToken">
+      <button class="primary" id="loginBtn">登陆并保存</button>
+    </div>
+
+    <!-- 已保存账号 -->
+    <div class="grp">
+      <span class="t">账号</span>
+      <select id="accSel" title="已保存账号"></select>
+      <button id="useAcc">切换</button>
+      <button id="delAcc">删</button>
+    </div>
+
+    <!-- ② 充值类型 -->
+    <div class="grp" id="rcGrp"><span class="t">②充值</span></div>
+
+    <!-- 工具 -->
+    <div class="grp">
+      <button id="exportBtn" title="导出当前账号的 session JSON">提取JSON</button>
+      <button class="danger" id="cancelBtn" title="取消订阅续费">退订续费</button>
+      <button id="homeBtn">回首页</button>
+      <button id="logoutBtn">退出</button>
+      <button id="updateBtn" title="检查更新">检查更新</button>
+    </div>
+  </div>
+
+  <!-- 常驻状态行 -->
+  <div id="statusbar">
+    <span id="acct"><span class="pill warn">未登陆</span></span>
+    <span id="msg"></span>
+  </div>
+
+  <webview id="wv" src="https://chatgpt.com" partition="persist:chatgpt" allowpopups></webview>
+  <script src="renderer.js"></script>
+</body>
+</html>
