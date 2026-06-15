@@ -101,8 +101,19 @@ $("#homeBtn").onclick = () => wv.loadURL("https://chatgpt.com/");
 // 校验一次，只更新常驻状态 #acct，返回是否已登陆
 async function verifyOnce(){
   try {
-    const s = await wv.executeJavaScript(
-      `fetch("/api/auth/session").then(r=>r.json()).then(d=>({e:d&&d.user&&d.user.email,p:d&&d.account&&d.account.planType})).catch(()=>({}))`, true);
+    const s = await wv.executeJavaScript(`(async()=>{
+      try{
+        const r=await fetch("/api/auth/session",{cache:"no-store",headers:{"cache-control":"no-cache"}});
+        const d=await r.json();
+        let plan=d&&d.account&&d.account.planType;
+        // 兜底：再查 /backend-api/me 的更准订阅字段
+        if((!plan||plan==="free")&&d&&d.accessToken){
+          try{ const m=await(await fetch("/backend-api/me",{cache:"no-store",headers:{Authorization:"Bearer "+d.accessToken}})).json();
+            plan=(m&&(m.plan_type||m.subscription_plan||(m.subscription&&m.subscription.plan)))||plan; }catch(e){}
+        }
+        return {e:d&&d.user&&d.user.email, p:plan};
+      }catch(e){return {}}
+    })()`, true);
     if (s && s.e) {
       const nm = currentName ? `（${escapeHtml(currentName)}）` : "";
       setAcct(`<span class="pill ok">已登陆</span> ${escapeHtml(s.e)}${nm} · 订阅 <span class="pill">${escapeHtml(s.p||"?")}</span>`);
@@ -196,33 +207,30 @@ $("#exportBtn").onclick = async () => {
   } catch (e) { setMsg(`<span class="pill bad">${escapeHtml(String(e))}</span>`); }
 };
 
-// ④ 一键退订续费（best-effort：尝试调取消接口；失败则打开订阅管理页）
+// ④ 一键退订续费：打开 ChatGPT 官方的 Stripe 客户门户（在门户里点 Cancel plan）
+// ChatGPT 未暴露“直接取消”接口，退订统一走 /backend-api/payments/customer_portal（已验证）
 $("#cancelBtn").onclick = async () => {
-  if (!confirm("取消当前账号的订阅续费？")) return;
-  setMsg("尝试退订…");
+  if (!confirm("打开退订门户？\n将跳转到官方 Stripe 客户门户，在那里点 “Cancel plan” 取消续费。")) return;
+  setMsg("获取退订门户…");
   const code = `(async()=>{
     try{
-      const t=await(await fetch("/api/auth/session")).json();
+      const t=await(await fetch("/api/auth/session",{cache:"no-store"})).json();
       if(!t.accessToken)return{e:"未登陆"};
-      const H={Authorization:"Bearer "+t.accessToken,"Content-Type":"application/json"};
-      // 已知/候选退订接口，逐个试
-      const tries=[
-        ["/backend-api/payments/cancel","POST","{}"],
-        ["/backend-api/subscription/cancel","POST","{}"]
-      ];
-      for(const [u,m,b] of tries){
-        try{ const r=await fetch(u,{method:m,headers:H,body:b}); if(r.ok){ const d=await r.json().catch(()=>({})); return {ok:1,u,d}; } }catch(e){}
-      }
-      // 退而求其次：取 Stripe 账单门户链接
-      try{ const r=await fetch("/backend-api/payments/billing_portal",{method:"POST",headers:H,body:"{}"}); const d=await r.json(); if(d&&d.url)return{portal:d.url}; }catch(e){}
-      return {none:1};
+      const r=await fetch("/backend-api/payments/customer_portal",{headers:{Authorization:"Bearer "+t.accessToken},cache:"no-store"});
+      const d=await r.json().catch(()=>({}));
+      if(d&&d.url)return{url:d.url};
+      return{e:"门户接口返回异常："+JSON.stringify(d).slice(0,150)};
     }catch(e){return{e:String(e)}}
   })()`;
   try {
     const res = await wv.executeJavaScript(code, true);
-    if (res && res.ok) { setMsg(`<span class="pill ok">退订请求成功</span> ${escapeHtml(res.u||"")}`); setTimeout(verifyOnce, 1500); }
-    else if (res && res.portal) { wv.loadURL(res.portal); setMsg('<span class="pill warn">已打开账单门户，请在页面点取消</span>'); }
-    else { wv.loadURL("https://chatgpt.com/#settings/Subscription"); setMsg('<span class="pill warn">未找到退订接口，已打开订阅设置，请手动取消</span>'); }
+    if (res && res.url) {
+      wv.loadURL(res.url);
+      setMsg('<span class="pill warn">已打开退订门户，请在页面点 “Cancel plan” 确认</span>');
+    } else {
+      wv.loadURL("https://chatgpt.com/#settings/Subscription");
+      setMsg(`<span class="pill bad">${escapeHtml((res&&res.e)||"获取失败")}，已打开订阅设置</span>`);
+    }
   } catch (e) { setMsg(`<span class="pill bad">${escapeHtml(String(e))}</span>`); }
 };
 

@@ -70,7 +70,10 @@ ipcMain.handle("set-token", async (_e, token) => {
 ipcMain.handle("clear-session", async () => {
   const ses = session.fromPartition(PARTITION);
   try {
-    await ses.clearStorageData({ storages: ["cookies"] });
+    // 清空整个分区：cookie + localStorage + IndexedDB + 缓存 + Service Worker
+    // 否则 ChatGPT 的 SW 会用缓存的旧 /api/auth/session，导致切号后仍显示旧账号/旧订阅
+    await ses.clearStorageData();
+    await ses.clearCache();
     return { ok: true };
   } catch (err) {
     return { ok: false, msg: String(err) };
