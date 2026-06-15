@@ -235,24 +235,25 @@ $("#cancelBtn").onclick = async () => {
       if(!d.accessToken)return{e:"未登陆"};
       const acc=d.account&&d.account.id;
       const H={Authorization:"Bearer "+d.accessToken,"Content-Type":"application/json"};
-      const r=await fetch("/backend-api/subscriptions/cancel",{method:"POST",headers:H,body:JSON.stringify({account_id:acc,cancellation_outcome:null})});
+      const r=await fetch("/backend-api/subscriptions/cancel",{method:"POST",headers:H,body:JSON.stringify({account_id:acc,cancellation_outcome:"deactivate"})});
       let b; try{b=await r.json()}catch(e){b=await r.text()}
-      if(r.ok)return{ok:1};
-      // 兜底：取 Stripe 客户门户
-      try{ const p=await(await fetch("/backend-api/payments/customer_portal",{headers:H,cache:"no-store"})).json(); if(p&&p.url)return{portal:p.url,status:r.status,body:b}; }catch(e){}
-      return{status:r.status, body:b};
+      // 复核真实续费状态：以 will_renew 为准，不轻信 200
+      let will=null;
+      try{ const s=await fetch("/backend-api/subscriptions?account_id="+acc,{headers:H,cache:"no-store"}); if(s.ok){const sj=await s.json(); will=!!sj.will_renew;} }catch(e){}
+      return {status:r.status, body:b, will_renew:will};
     }catch(e){return{e:String(e)}}
   })()`;
   try {
     const res = await wv.executeJavaScript(code, true);
-    if (res && res.ok) {
-      setMsg('<span class="pill ok">已退订（已停止续费）</span>');
-      setTimeout(verifyOnce, 1500);
-    } else if (res && res.portal) {
-      wv.loadURL(res.portal);
-      setMsg(`<span class="pill warn">直接退订未成功(${escapeHtml(String(res.status))})，已打开 Stripe 门户，请点 Cancel plan</span>`);
+    if (res && res.e) { setMsg(`<span class="pill bad">出错：${escapeHtml(res.e)}</span>`); return; }
+    if (res && res.will_renew === false) {
+      setMsg('<span class="pill ok">已退订（已确认 will_renew=false）</span>');
+      setTimeout(verifyOnce, 800);
     } else {
-      setMsg(`<span class="pill bad">退订失败：${escapeHtml(res&&res.e ? res.e : JSON.stringify(res&&res.body||res).slice(0,150))}</span>`);
+      // 没真正生效：显示原始返回，并打开官方门户兜底
+      const raw = escapeHtml(JSON.stringify(res && res.body !== undefined ? res.body : res).slice(0, 220));
+      setMsg(`<span class="pill bad">退订未生效(HTTP ${escapeHtml(String(res&&res.status))}, will_renew=${escapeHtml(String(res&&res.will_renew))})</span> ${raw}`);
+      setTimeout(verifyOnce, 800);
     }
   } catch (e) { setMsg(`<span class="pill bad">${escapeHtml(String(e))}</span>`); }
 };
