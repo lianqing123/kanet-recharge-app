@@ -103,6 +103,7 @@ $("#logoutBtn").onclick = async () => {
   wv.loadURL("https://chatgpt.com/");
   setAcct('<span class="pill warn">未登陆</span>'); setMsg("已退出");
 };
+$("#reloadBtn").onclick = () => { setMsg("刷新页面中…"); try { wv.reloadIgnoringCache(); } catch { wv.reload(); } };
 $("#homeBtn").onclick = () => wv.loadURL("https://chatgpt.com/");
 
 // 校验一次：读真实订阅+续费状态，更新常驻状态 #acct，返回是否已登陆
