@@ -2,3 +2,8 @@ node_modules/
 dist/
 *.log
 .DS_Store
+
+# 授权私钥：绝不提交（仓库公开，泄露=授权体系作废）
+*.pem
+keygen/private.pem
+keygen/public.pem

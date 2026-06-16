@@ -2,7 +2,7 @@
   "appId": "com.kanet.recharge",
   "productName": "分销充值助手",
   "directories": { "output": "dist" },
-  "files": ["main.js", "preload.js", "updater.js", "index.html", "renderer.js", "package.json"],
+  "files": ["main.js", "preload.js", "updater.js", "license.js", "index.html", "activation.html", "renderer.js", "package.json"],
   "publish": [{ "provider": "github", "owner": "lianqing123", "repo": "kanet-recharge-app" }],
   "artifactName": "kanet-recharge-${version}-${arch}.${ext}",
   "mac": {

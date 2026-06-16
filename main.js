@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, session } = require("electron");
 const path = require("path");
 const { checkForUpdates } = require("./updater");
+const lic = require("./license");
 
 const PARTITION = "persist:chatgpt";
 const COOKIE_DOMAIN = "chatgpt.com";
@@ -21,13 +22,31 @@ function createWindow() {
     }
   });
   mainWin = win;
-  win.loadFile("index.html");
-  // 启动后静默检查更新（有新版才弹窗）
-  setTimeout(() => checkForUpdates(win, true), 4000);
+  // 授权门：已激活进主界面，否则进激活页
+  if (lic.currentStatus().activated) {
+    win.loadFile("index.html");
+    setTimeout(() => checkForUpdates(win, true), 4000);
+  } else {
+    win.loadFile("activation.html");
+  }
 }
 
 ipcMain.handle("check-update", () => { if (mainWin) checkForUpdates(mainWin, false); });
 ipcMain.handle("get-version", () => app.getVersion());
+
+// ---- 授权相关 IPC ----
+ipcMain.handle("lic-machine-id", () => lic.machineId());
+ipcMain.handle("lic-status", () => lic.currentStatus());
+ipcMain.handle("lic-activate", (_e, cdk) => {
+  const r = lic.verifyCDK(cdk);
+  if (r.valid) {
+    lic.saveActivation(cdk.trim());
+    if (mainWin) mainWin.loadFile("index.html");
+    return { ok: true, payload: r.payload };
+  }
+  return { ok: false, reason: r.reason };
+});
+ipcMain.handle("lic-deactivate", () => { lic.clearActivation(); if (mainWin) mainWin.loadFile("activation.html"); });
 
 // next-auth 把超长 session token 切成 < 4096B 的多块 cookie，这里复制其分块规则
 const CHUNK = 3933; // 4096 - 估算的 cookie 头开销，与 next-auth 一致

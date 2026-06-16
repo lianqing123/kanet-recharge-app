@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>激活 - 分销充值助手</title>
+<style>
+  :root{--bg:#10131a;--panel:#171b24;--line:#2a3140;--fg:#e6e9ef;--mut:#9aa3b2;--acc:#10a37f}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px/1.5 -apple-system,system-ui,"PingFang SC",sans-serif;display:flex;align-items:center;justify-content:center}
+  .card{width:min(520px,92%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px}
+  h1{font-size:18px;margin:0 0 4px}
+  .sub{color:var(--mut);font-size:12px;margin-bottom:18px}
+  label{font-size:12px;color:var(--mut)}
+  textarea{width:100%;min-height:84px;margin-top:6px;background:#23272f;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px;font:12px/1.5 ui-monospace,Menlo,monospace;resize:vertical}
+  .row{display:flex;gap:10px;align-items:center;margin-top:14px}
+  button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer}
+  button:hover{filter:brightness(1.08)}
+  .mid{margin-top:16px;padding:12px;background:#23272f;border:1px solid var(--line);border-radius:8px;font-size:12px}
+  .mono{font:12px ui-monospace,Menlo,monospace;color:#e6e9ef}
+  .copy{background:#23272f;border:1px solid var(--line);color:var(--fg);padding:4px 10px;font-size:11px;border-radius:6px}
+  #msg{font-size:12px;margin-top:10px;min-height:18px}
+  .ok{color:#34c759}.bad{color:#ff453a}
+  .ver{position:fixed;top:10px;right:14px;color:var(--mut);font-size:11px}
+</style>
+</head>
+<body>
+  <span class="ver" id="ver"></span>
+  <div class="card">
+    <h1>软件激活</h1>
+    <div class="sub">请输入授权码（CDK）激活后使用。</div>
+
+    <label>授权码 CDK</label>
+    <textarea id="cdk" placeholder="粘贴 KANET-xxxxx.xxxxx 形式的授权码"></textarea>
+
+    <div class="row">
+      <button id="actBtn">激活</button>
+      <span id="msg"></span>
+    </div>
+
+    <div class="mid">
+      <div>本机机器码（购买“绑机器”授权时提供给卖家）：</div>
+      <div class="row" style="margin-top:6px">
+        <span class="mono" id="mid">…</span>
+        <button class="copy" id="copyMid">复制</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    window.kh.getVersion().then(v => $("#ver").textContent = "v" + v);
+    window.kh.licMachineId().then(id => $("#mid").textContent = id);
+    $("#copyMid").onclick = () => navigator.clipboard.writeText($("#mid").textContent);
+    $("#actBtn").onclick = async () => {
+      const cdk = $("#cdk").value.trim();
+      if (!cdk) { msg("请输入授权码", "bad"); return; }
+      msg("校验中…", "");
+      const r = await window.kh.licActivate(cdk);
+      if (r.ok) { msg("激活成功，正在进入…", "ok"); }
+      else { msg("激活失败：" + (r.reason || ""), "bad"); }
+    };
+    function msg(t, k){ const e = $("#msg"); e.textContent = t; e.className = k; }
+  </script>
+</body>
+</html>
