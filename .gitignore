@@ -9,3 +9,7 @@ keygen/private.pem
 keygen/public.pem
 keygen-app/embedded-key.js
 keygen/注册机.html
+keygen-exe/
+keygen/*.exe
+keygen/*.zip
+keygen/*.html
