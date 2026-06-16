@@ -1,0 +1,9 @@
+{
+  "name": "kanet-keygen",
+  "version": "1.0.0",
+  "description": "授权注册机（仅作者本地使用）",
+  "main": "main.js",
+  "author": "kanet",
+  "scripts": { "start": "electron .", "dist": "electron-builder" },
+  "devDependencies": { "electron": "^31.0.0", "electron-builder": "^24.13.3" }
+}

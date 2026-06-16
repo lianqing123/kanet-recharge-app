@@ -1,0 +1,9 @@
+{
+  "appId": "com.kanet.keygen",
+  "productName": "授权注册机",
+  "directories": { "output": "dist" },
+  "files": ["main.js", "preload.js", "keygen.html", "embedded-key.js", "package.json"],
+  "artifactName": "kanet-keygen-${version}-${arch}.${ext}",
+  "win": { "target": [{ "target": "zip", "arch": ["x64"] }] },
+  "mac": { "target": [{ "target": "dmg", "arch": ["arm64"] }], "identity": null }
+}

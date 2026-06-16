@@ -1,6 +1,6 @@
 {
   "name": "kanet-recharge-app",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "分销充值助手（合规版）：快捷登陆 GPT + 一键跳转结算。卡/地址手动填写。",
   "main": "main.js",
   "author": "kanet"

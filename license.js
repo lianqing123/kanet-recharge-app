@@ -45,8 +45,11 @@ function verifyCDK(cdk) {
     if (payload.exp && Date.now() > payload.exp) {
       return { valid: false, reason: "已过期（" + new Date(payload.exp).toLocaleString() + "）", payload };
     }
-    // 机器绑定
-    if (payload.m && payload.m !== machineId()) {
+    // 机器绑定（强制）：必须带机器码且与本机一致
+    if (!payload.m) {
+      return { valid: false, reason: "该授权码未绑定机器码，无效", payload };
+    }
+    if (payload.m !== machineId()) {
       return { valid: false, reason: "机器码不匹配（本机 " + machineId() + "）", payload };
     }
     return { valid: true, payload };

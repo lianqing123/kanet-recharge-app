@@ -7,3 +7,4 @@ dist/
 *.pem
 keygen/private.pem
 keygen/public.pem
+keygen-app/embedded-key.js

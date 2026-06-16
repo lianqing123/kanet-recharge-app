@@ -37,10 +37,11 @@ function init() {
 
 function gen(args) {
   if (!fs.existsSync(PRIV)) { console.error("找不到 keygen/private.pem，请先 node keygen.js init"); process.exit(1); }
+  if (!args.machine) { console.error("必须指定 --machine 机器码（已启用强制绑定）。客户在程序激活页可看到自己的机器码。"); process.exit(1); }
   const priv = crypto.createPrivateKey(fs.readFileSync(PRIV));
   const payload = { id: crypto.randomBytes(6).toString("hex"), iat: Date.now() };
   if (args.days) payload.exp = Date.now() + Number(args.days) * 86400000;
-  if (args.machine) payload.m = String(args.machine).toUpperCase();
+  payload.m = String(args.machine).trim().toUpperCase();
   if (args.note) payload.note = String(args.note);
 
   const payloadBuf = Buffer.from(JSON.stringify(payload), "utf8");
